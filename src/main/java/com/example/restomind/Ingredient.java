@@ -15,4 +15,20 @@ public class Ingredient implements Serializable {
         this.pricePerUnit = pricePerUnit;
         this.expirationDate = expirationDate;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public double getPricePerUnit() {
+        return pricePerUnit;
+    }
+
+    public LocalDate getExpirationDate() {
+        return expirationDate;
+    }
 }
