@@ -33,8 +33,8 @@ public class InventoryManager implements Serializable{
             // create a copy of the ingredient
             Ingredient copyIngredient = new Ingredient(
                     originalIngredient.getName(),
-                    originalIngredient.getAmount(),
-                    originalIngredient.getPricePerUnit(),
+                    originalIngredient.getAmoutInKg(),
+                    originalIngredient.getPricePerKg(),
                     originalIngredient.getExpirationDate()
 
             );
