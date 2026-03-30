@@ -15,17 +15,19 @@ public class Dish implements Serializable{
         this.price = price;
         this.recipe = new HashMap<>();
     }
+
     // adds ingredient to the hash map recipe
     public void addIngredientToRecipe(String name, double amount) {
         recipe.put(name, amount);
     }
+
     // calculate how much money the dish cost restaurant
     public double calculateDishIngredientsCost(InventoryManager inventory){
         double cost = 0;
         for (Map.Entry<String,Double> ingredient : recipe.entrySet()){
             Ingredient currentIngredient = inventory.getIngredient(ingredient.getKey());
-            double amountInKg = ingredient.getValue();
-            cost += currentIngredient.getPricePerKg() * amountInKg;
+            double amount = ingredient.getValue();
+            cost += currentIngredient.getPricePerKg() * amount;
         }
         return cost;
     }
@@ -36,5 +38,9 @@ public class Dish implements Serializable{
 
     public double getPrice() {
         return price;
+    }
+
+    public HashMap<String, Double> getRecipe() {
+        return recipe;
     }
 }
