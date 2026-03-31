@@ -48,13 +48,27 @@ public class InventoryManager implements Serializable{
     public boolean canMake(Dish dish, int amountToMake){
         for(Map.Entry<String,Double> ingredient : dish.getRecipe().entrySet()){
             double amountIngredientPerDish = ingredient.getValue();
-            Ingredient IngredientInInventory = ingredientsHashMap.get(ingredient.getKey());
-            if(IngredientInInventory == null || amountIngredientPerDish * amountToMake < IngredientInInventory.getAmoutInKg()){
+            Ingredient ingredientInInventory = ingredientsHashMap.get(ingredient.getKey());
+            if(ingredientInInventory == null || amountIngredientPerDish * amountToMake < ingredientInInventory.getAmoutInKg()){
                 return false;
             }
         }
         return true;
     }
+
+    // subtract the amount of dishes from inventory
+    public void subtractFromInventory(Dish dish, int amountToSold){
+        for(Map.Entry<String,Double> ingredient : dish.getRecipe().entrySet()){
+            double amountIngredientsNeeded = ingredient.getValue() * amountToSold;
+            Ingredient ingredientInInventory = ingredientsHashMap.get(ingredient.getKey());
+            if(ingredientInInventory != null){
+                ingredientInInventory.setAmoutInKg(ingredientInInventory.getAmoutInKg() - amountIngredientsNeeded);
+            }
+        }
+
+    }
+
+
 
     // Serialization
     // save the object data to a file so when you close the program the data won't disappear

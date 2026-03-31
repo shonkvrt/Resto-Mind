@@ -32,4 +32,8 @@ public class Ingredient implements Serializable {
     public LocalDate getExpirationDate() {
         return expirationDate;
     }
+
+    public void setAmoutInKg(double amoutInKg) {
+        this.amoutInKg = amoutInKg;
+    }
 }
