@@ -86,8 +86,23 @@ public class InventoryManager implements Serializable{
         return expiredIngredients;
     }
 
+    public void removeExpiredIngredients() {
+        LocalDate today = LocalDate.now();
+
+        List<String> toRemoveIngredients = new ArrayList<>();
 
 
+        for (Ingredient ingredient : ingredientsHashMap.values()) {
+            if (ingredient.getExpirationDate().isBefore(today)) {
+                toRemoveIngredients.add(ingredient.getName());
+            }
+        }
+
+        for (String name : toRemoveIngredients) {
+            ingredientsHashMap.remove(name);
+            System.out.println(name + "removed since expired");
+        }
+    }
 
     // Serialization
     // save the object data to a file so when you close the program the data won't disappear
