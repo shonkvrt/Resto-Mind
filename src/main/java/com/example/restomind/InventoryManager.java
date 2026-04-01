@@ -1,7 +1,10 @@
 package com.example.restomind;
 
 import java.io.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // implements Serializable to save the object data in a file
@@ -33,8 +36,8 @@ public class InventoryManager implements Serializable{
             // create a copy of the ingredient
             Ingredient copyIngredient = new Ingredient(
                     originalIngredient.getName(),
-                    originalIngredient.getAmoutInKg(),
-                    originalIngredient.getPricePerKg(),
+                    originalIngredient.getAmout(),
+                    originalIngredient.getPricePerUnit(),
                     originalIngredient.getExpirationDate()
 
             );
@@ -49,7 +52,7 @@ public class InventoryManager implements Serializable{
         for(Map.Entry<String,Double> ingredient : dish.getRecipe().entrySet()){
             double amountIngredientPerDish = ingredient.getValue();
             Ingredient ingredientInInventory = ingredientsHashMap.get(ingredient.getKey());
-            if(ingredientInInventory == null || amountIngredientPerDish * amountToMake < ingredientInInventory.getAmoutInKg()){
+            if(ingredientInInventory == null || amountIngredientPerDish * amountToMake > ingredientInInventory.getAmout()){
                 return false;
             }
         }
@@ -62,11 +65,27 @@ public class InventoryManager implements Serializable{
             double amountIngredientsNeeded = ingredient.getValue() * amountToSold;
             Ingredient ingredientInInventory = ingredientsHashMap.get(ingredient.getKey());
             if(ingredientInInventory != null){
-                ingredientInInventory.setAmoutInKg(ingredientInInventory.getAmoutInKg() - amountIngredientsNeeded);
+                ingredientInInventory.setAmout(ingredientInInventory.getAmout() - amountIngredientsNeeded);
             }
         }
 
     }
+
+    // gets a days limit till expired and return ingredients that will expire before that date
+    public List<Ingredient> getExpiringIngredients(int limitDaysTillExpired) {
+        List<Ingredient> expiredIngredients = new ArrayList<>();
+        // saves the current date and adds the limit days
+        LocalDate limitDateTillExpired = LocalDate.now().plusDays(limitDaysTillExpired);
+        for (Ingredient ingredient : ingredientsHashMap.values()) {
+            /* checks if the date expiration of this specific ingredient is before the limit date
+            if it before then we add to the expiredList*/
+            if (ingredient.getExpirationDate().isBefore(limitDateTillExpired)) {
+                expiredIngredients.add(ingredient);
+            }
+        }
+        return expiredIngredients;
+    }
+
 
 
 

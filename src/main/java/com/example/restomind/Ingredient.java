@@ -6,14 +6,14 @@ import java.time.LocalDate;
     so it also has to implements Serializable*/
 public class Ingredient implements Serializable {
     private String name;
-    private double amoutInKg;
-    private double pricePerKg;
+    private double amout;
+    private double pricePerUnit;
     private LocalDate expirationDate; // localDate is a date type that shows (day,month,year)
 
-    public Ingredient(String name, double amoutInKg, double pricePerKg,LocalDate expirationDate){
+    public Ingredient(String name, double amout, double pricePerUnit,LocalDate expirationDate){
         this.name = name;
-        this.amoutInKg = amoutInKg;
-        this.pricePerKg = pricePerKg;
+        this.amout = amout;
+        this.pricePerUnit = pricePerUnit;
         this.expirationDate = expirationDate;
     }
 
@@ -21,19 +21,19 @@ public class Ingredient implements Serializable {
         return name;
     }
 
-    public double getAmoutInKg() {
-        return amoutInKg;
+    public double getAmout() {
+        return amout;
     }
 
-    public double getPricePerKg() {
-        return pricePerKg;
+    public double getPricePerUnit() {
+        return pricePerUnit;
     }
 
     public LocalDate getExpirationDate() {
         return expirationDate;
     }
 
-    public void setAmoutInKg(double amoutInKg) {
-        this.amoutInKg = amoutInKg;
+    public void setAmout(double amout) {
+        this.amout = amout;
     }
 }

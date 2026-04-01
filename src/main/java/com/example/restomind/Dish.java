@@ -27,7 +27,7 @@ public class Dish implements Serializable{
         for (Map.Entry<String,Double> ingredient : recipe.entrySet()){
             Ingredient currentIngredient = inventory.getIngredient(ingredient.getKey());
             double amount = ingredient.getValue();
-            cost += currentIngredient.getPricePerKg() * amount;
+            cost += currentIngredient.getPricePerUnit() * amount;
         }
         return cost;
     }
