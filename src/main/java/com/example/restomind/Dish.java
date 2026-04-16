@@ -9,6 +9,7 @@ public class Dish implements Serializable{
     private double price;
     // String: name of the ingredient, Double: amount of the ingredient
     private HashMap<String, Double> recipe;
+    private int estimatedDemand;
 
     public Dish(String name, double price) {
         this.name = name;

@@ -28,7 +28,9 @@ public class InventoryManager implements Serializable{
 
     // copy data for genetic algorithm
     public InventoryManager createCopy(){
+
         InventoryManager copy = new InventoryManager();
+
         /* creates sets (String, Ingredient) of our data and then run through all the
          ingredients and copy them */
         for (Map.Entry<String,Ingredient> ingredient : ingredientsHashMap.entrySet()){
@@ -41,6 +43,7 @@ public class InventoryManager implements Serializable{
                     originalIngredient.getExpirationDate()
 
             );
+
             // add the copy ingredient to the copy map
             copy.addIngredient(copyIngredient);
         }
@@ -73,10 +76,13 @@ public class InventoryManager implements Serializable{
 
     // gets a days limit till expired and return ingredients that will expire before that date
     public List<Ingredient> getExpiringIngredients(int limitDaysTillExpired) {
+
         List<Ingredient> expiredIngredients = new ArrayList<>();
         // saves the current date and adds the limit days
         LocalDate limitDateTillExpired = LocalDate.now().plusDays(limitDaysTillExpired);
+
         for (Ingredient ingredient : ingredientsHashMap.values()) {
+
             /* checks if the date expiration of this specific ingredient is before the limit date
             if it before then we add to the expiredList*/
             if (ingredient.getExpirationDate().isBefore(limitDateTillExpired)) {
@@ -85,7 +91,7 @@ public class InventoryManager implements Serializable{
         }
         return expiredIngredients;
     }
-
+    // remove expired ingredients
     public void removeExpiredIngredients() {
         LocalDate today = LocalDate.now();
 
@@ -107,9 +113,11 @@ public class InventoryManager implements Serializable{
     // Serialization
     // save the object data to a file so when you close the program the data won't disappear
     public void saveDataToFile(String fileName) {
+
         /* FileOutputStream connect to the specific file,
          ObjectOutputStream takes care about transfer objects*/
         try (ObjectOutputStream fileConnection = new ObjectOutputStream(new FileOutputStream(fileName))) {
+
             // takes the InventoryManager object and writes it into the file
             fileConnection.writeObject(this);
             System.out.println("Inventory saved successfully!");
@@ -121,6 +129,7 @@ public class InventoryManager implements Serializable{
     // Deserialization
     // takes the object data from a specific file and return it
     public static InventoryManager loadDataFromFile(String fileName) {
+
         try (ObjectInputStream fileConnection = new ObjectInputStream(new FileInputStream(fileName))) {
             return (InventoryManager) fileConnection.readObject();
         }
@@ -129,5 +138,9 @@ public class InventoryManager implements Serializable{
         catch (IOException | ClassNotFoundException e) {
             return new InventoryManager(); // returns empty object so it won't crash later
         }
+    }
+
+    public HashMap<String, Ingredient> getIngredientsHashMap() {
+        return ingredientsHashMap;
     }
 }
