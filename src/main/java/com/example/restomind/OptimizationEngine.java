@@ -7,7 +7,7 @@ import java.util.Random;
 public class OptimizationEngine {
     private InventoryManager inventory;
     private List<Dish> menu;
-    private int amountPlans = 100; // amount of random plans
+    private int amountPlans = 10; // amount of random plans
 
     public OptimizationEngine(InventoryManager inventory, List<Dish> menu) {
         this.inventory = inventory;
@@ -49,6 +49,7 @@ public class OptimizationEngine {
         return plans;
     }
 
+    // gives fitness score for each plan
     public void fitnessScoreForPlans(List<WorkPlan> plans) {
         for (WorkPlan plan : plans) {
             // creates copy of the inventory
@@ -88,5 +89,59 @@ public class OptimizationEngine {
             // update fitness score for this specific plan
             plan.setFitness(fitnessScore);
         }
+    }
+    // sorting the plans from the highest to the lowest by the fitness score
+    public void sortPlans(List<WorkPlan> plans) {
+        plans.sort((p1, p2) -> Double.compare(p2.getFitness(), p1.getFitness()));
+    }
+    // we take the highest plans
+    public List<WorkPlan> selectTheBest(List<WorkPlan> plans) {
+        return new ArrayList<>(plans.subList(0, amountPlans / 2));
+    }
+    /* takes the best plans and creates plans evolve with two good plans
+    till it back to the original amount of plans*/
+    public List<WorkPlan> evolve(List<WorkPlan> bestPlans) {
+        List<WorkPlan> nextGeneration = new ArrayList<>();
+        Random random = new Random();
+
+        // fill back to 100 plans 
+        while (nextGeneration.size() < amountPlans) {
+
+            WorkPlan parent1 = bestPlans.get(random.nextInt(bestPlans.size()));
+            WorkPlan parent2 = bestPlans.get(random.nextInt(bestPlans.size()));
+
+            WorkPlan child = crossover(parent1, parent2);
+
+
+            if (random.nextDouble() < 0.05) {
+                Mutation(child);
+            }
+
+            nextGeneration.add(child);
+        }
+        return nextGeneration;
+    }
+
+    // crossover two plans to one
+    private WorkPlan crossover(WorkPlan p1, WorkPlan p2) {
+        WorkPlan child = new WorkPlan();
+        Random random = new Random();
+
+        for (Dish dish : menu) {
+            String name = dish.getName();
+            // choose randomly from which parent to take their amount of this specific dish
+            int amount = random.nextBoolean() ? p1.getPlan().get(name) : p2.getPlan().get(name);
+            child.addDishAmount(name, amount);
+        }
+        return child;
+    }
+
+    // creates a mutation plan that randomly change the amount ( to try new things )
+    private void Mutation(WorkPlan plan) {
+        Random random = new Random();
+        Dish randomDish = menu.get(random.nextInt(menu.size()));
+        int currentAmount = plan.getPlan().get(randomDish.getName());
+        // add or subtract from the current amount
+        plan.addDishAmount(randomDish.getName(), Math.max(0, currentAmount + random.nextInt(11) - 5));
     }
 }
