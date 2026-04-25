@@ -17,8 +17,8 @@ class WorkPlan {
         plan.put(dishName, amount);
     }
 
-    public void printPlan() {
-        System.out.println("all plans :");
+    public void printPlan(int num) {
+        System.out.println("plan number " + num + " :");
         for (Map.Entry<String, Integer> entry : plan.entrySet()) {
             System.out.println(entry.getKey() + ": " + entry.getValue());
         }

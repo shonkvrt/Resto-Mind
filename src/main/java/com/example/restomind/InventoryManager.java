@@ -21,11 +21,6 @@ public class InventoryManager implements Serializable{
         ingredientsHashMap.put(ingredient.getName(),ingredient);
     }
 
-    // get Ingredient from the map
-    public Ingredient getIngredient(String name){
-        return ingredientsHashMap.get(name);
-    }
-
     // copy data for genetic algorithm
     public InventoryManager createCopy(){
 
@@ -38,7 +33,7 @@ public class InventoryManager implements Serializable{
             // create a copy of the ingredient
             Ingredient copyIngredient = new Ingredient(
                     originalIngredient.getName(),
-                    originalIngredient.getAmout(),
+                    originalIngredient.getAmount(),
                     originalIngredient.getPricePerUnit(),
                     originalIngredient.getExpirationDate()
 
@@ -52,10 +47,13 @@ public class InventoryManager implements Serializable{
 
     // checking if there are enough to cook the amount of this dish
     public boolean canMake(Dish dish, int amountToMake){
+
         for(Map.Entry<String,Double> ingredient : dish.getRecipe().entrySet()){
+
             double amountIngredientPerDish = ingredient.getValue();
             Ingredient ingredientInInventory = ingredientsHashMap.get(ingredient.getKey());
-            if(ingredientInInventory == null || amountIngredientPerDish * amountToMake > ingredientInInventory.getAmout()){
+
+            if(ingredientInInventory == null || amountIngredientPerDish * amountToMake > ingredientInInventory.getAmount()){
                 return false;
             }
         }
@@ -64,11 +62,14 @@ public class InventoryManager implements Serializable{
 
     // subtract the amount of dishes from inventory
     public void subtractFromInventory(Dish dish, int amountToSold){
+
         for(Map.Entry<String,Double> ingredient : dish.getRecipe().entrySet()){
+
             double amountIngredientsNeeded = ingredient.getValue() * amountToSold;
             Ingredient ingredientInInventory = ingredientsHashMap.get(ingredient.getKey());
+
             if(ingredientInInventory != null){
-                ingredientInInventory.setAmout(ingredientInInventory.getAmout() - amountIngredientsNeeded);
+                ingredientInInventory.setAmount(ingredientInInventory.getAmount() - amountIngredientsNeeded);
             }
         }
 
@@ -106,7 +107,7 @@ public class InventoryManager implements Serializable{
 
         for (String name : toRemoveIngredients) {
             ingredientsHashMap.remove(name);
-            System.out.println(name + "removed since expired");
+            System.out.println(name + " removed since expired");
         }
     }
 
@@ -138,6 +139,10 @@ public class InventoryManager implements Serializable{
         catch (IOException | ClassNotFoundException e) {
             return new InventoryManager(); // returns empty object so it won't crash later
         }
+    }
+
+    public Ingredient getIngredient(String name){
+        return ingredientsHashMap.get(name);
     }
 
     public HashMap<String, Ingredient> getIngredientsHashMap() {

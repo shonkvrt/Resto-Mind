@@ -45,7 +45,48 @@ public class OptimizationEngine {
             plans.add(newPlan);
         }
 
-        System.out.println(amountPlans + "plans have been created");
+        System.out.println(amountPlans + " plans have been created");
         return plans;
+    }
+
+    public void fitnessScoreForPlans(List<WorkPlan> plans) {
+        for (WorkPlan plan : plans) {
+            // creates copy of the inventory
+            InventoryManager copyInventory = inventory.createCopy();
+            double fitnessScore = 0;
+
+
+            for (Dish dish : menu) {
+
+                /* takes the from the hash table the amount the plan gave to the dish
+                and if the dish wasn't found so the default is 0 (getOrDefault) */
+                int plannedAmount = plan.getPlan().getOrDefault(dish.getName(), 0);
+                int avgDemand = dish.getavgDemand();
+                
+                if (copyInventory.canMake(dish, plannedAmount)) {
+                    
+                    copyInventory.subtractFromInventory(dish, plannedAmount);
+
+                    /*calculates the fitness score by multiplying the amount of sales that is limit is the avgDemand
+                    by the price*/
+                    int actualAmountOfSales = Math.min(plannedAmount, avgDemand);
+                    fitnessScore += (actualAmountOfSales * dish.getPrice());
+
+                    /* if the amount of the plan is bigger than the avg so we will reduce the fitness score
+                    take the estimated dishes that would go to waste and multiply it by half of the dish price
+                    ( the estimated cost of the dish to the restaurant ) */
+                    if (plannedAmount > avgDemand) {
+                        fitnessScore -= (plannedAmount - avgDemand) * (dish.getPrice() * 0.5);
+                    }
+                } else {
+                    /* reduce fitness score by a big number
+                    because there was not enough ingredients for the plan */
+                    fitnessScore -= 500;
+                }
+            }
+
+            // update fitness score for this specific plan
+            plan.setFitness(fitnessScore);
+        }
     }
 }
