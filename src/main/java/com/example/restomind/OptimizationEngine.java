@@ -14,9 +14,28 @@ public class OptimizationEngine {
         this.menu = menu;
     }
 
-    // the function that will run the optimization
-    public void runOptimization() {
+    // the function that will run the genetic algorithm and give us the best plan
+    public WorkPlan runOptimization(int generations) {
 
+        List<WorkPlan> plans = createInitialPlans();
+
+        for (int i = 0; i < generations; i++) {
+            fitnessScoreForPlans(plans);
+            sortPlans(plans);
+
+            // shows improvement of the results
+            if (i % 10 == 0) {
+                System.out.println("generation " + i + " score: " + plans.get(0).getFitness());
+            }
+
+            List<WorkPlan> theBest = selectTheBest(plans);
+            plans = evolve(theBest);
+        }
+
+        fitnessScoreForPlans(plans);
+        sortPlans(plans);
+
+        return plans.get(0);
     }
 
     // creates all the initial plans with random amounts to each dish
