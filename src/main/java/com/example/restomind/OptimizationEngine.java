@@ -7,7 +7,7 @@ import java.util.Random;
 public class OptimizationEngine {
     private InventoryManager inventory;
     private List<Dish> menu;
-    private int amountPlans = 10; // amount of random plans
+    private int amountPlans = 100; // amount of random plans
 
     public OptimizationEngine(InventoryManager inventory, List<Dish> menu) {
         this.inventory = inventory;
@@ -15,7 +15,7 @@ public class OptimizationEngine {
     }
 
     // the function that will run the genetic algorithm and give us the best plan
-    public WorkPlan runOptimization(int generations) {
+    public WorkPlan runGeneticAlgorithm(int generations) {
 
         List<WorkPlan> plans = createInitialPlans();
 
