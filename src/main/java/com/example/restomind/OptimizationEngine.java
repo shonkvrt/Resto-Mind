@@ -1,5 +1,7 @@
 package com.example.restomind;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -8,6 +10,7 @@ public class OptimizationEngine {
     private InventoryManager inventory;
     private List<Dish> menu;
     private int amountPlans = 100; // amount of random plans
+    private String currentDayType = "REGULAR";
 
     public OptimizationEngine(InventoryManager inventory, List<Dish> menu) {
         this.inventory = inventory;
@@ -48,28 +51,24 @@ public class OptimizationEngine {
 
             // for every dish in the menu we will give a random amount
             for (Dish dish : menu) {
-                
-                // random amount between 0 to the avg demand + 20% to try above the avg
-                int maxAmount = (int) (dish.getavgDemand() * 1.2);
-                
-                // if avg demand is not given
-                if (maxAmount <= 0){
-                    maxAmount = 10;
-                }
-                
-                int randomAmount = random.nextInt(maxAmount);
+
+                double avgDemand = dish.getDemand(currentDayType, LocalDate.now().getDayOfWeek());
+                // random amount limited close to our avgDemand (a little bit above for trying)
+                int randomAmount = random.nextInt((int)(avgDemand*1.5)+5);
                 newPlan.addDishAmount(dish.getName(), randomAmount);
+                newPlan.addDishAction(dish.getName(), random.nextInt(3));
             }
 
             plans.add(newPlan);
         }
 
-        System.out.println(amountPlans + " plans have been created");
         return plans;
     }
 
     // gives fitness score for each plan
     public void fitnessScoreForPlans(List<WorkPlan> plans) {
+        DayOfWeek today = LocalDate.now().getDayOfWeek();
+
         for (WorkPlan plan : plans) {
             // creates copy of the inventory
             InventoryManager copyInventory = inventory.createCopy();
@@ -78,33 +77,42 @@ public class OptimizationEngine {
 
             for (Dish dish : menu) {
 
-                /* takes the from the hash table the amount the plan gave to the dish
+                /* takes from the hash table the amount the plan gave to the dish
                 and if the dish wasn't found so the default is 0 (getOrDefault) */
-                int plannedAmount = plan.getPlan().getOrDefault(dish.getName(), 0);
-                int avgDemand = dish.getavgDemand();
-                
+                int plannedAmount = plan.getPlan().get(dish.getName());
+                int actionType = plan.getActions().get(dish.getName());
+
+                double demand = dish.getDemand(currentDayType,today);
+                // the avg demand boost this action gives us
+                double demandBoost = dish.getDemandBoost(actionType);
+
+                double dishPrice = dish.getPrice();
+                if(actionType == 2){
+                    dishPrice *= 0.8;
+                }
+
+                demand *= demandBoost;
+
                 if (copyInventory.canMake(dish, plannedAmount)) {
                     
                     copyInventory.subtractFromInventory(dish, plannedAmount);
 
                     /*calculates the fitness score by multiplying the amount of sales that is limit is the avgDemand
                     by the price*/
-                    int actualAmountOfSales = Math.min(plannedAmount, avgDemand);
-                    fitnessScore += (actualAmountOfSales * dish.getPrice());
+                    int actualAmountOfSales = (int) Math.min(plannedAmount, demand);
+                    double profit = (actualAmountOfSales * dishPrice);
+                    double ingredientsCost = plannedAmount * dish.calculateDishIngredientsCost(inventory);
 
-                    /* if the amount of the plan is bigger than the avg so we will reduce the fitness score
-                    take the estimated dishes that would go to waste and multiply it by half of the dish price
-                    ( the estimated cost of the dish to the restaurant ) */
-                    if (plannedAmount > avgDemand) {
-                        fitnessScore -= (plannedAmount - avgDemand) * (dish.calculateDishIngredientsCost(inventory));
-                    }
+                    fitnessScore += (profit - ingredientsCost);
                 } else {
                     /* reduce fitness score by a big number
                     because there was not enough ingredients for the plan */
                     fitnessScore -= 500;
                 }
             }
-
+            // calculate how much money we will lose on expired food in the copy inventory
+            double wasteFoodCost = copyInventory.calculateExpiredWasteValue();
+            fitnessScore -= wasteFoodCost * 1.5;
             // update fitness score for this specific plan
             plan.setFitness(fitnessScore);
         }
@@ -117,6 +125,7 @@ public class OptimizationEngine {
     public List<WorkPlan> selectTheBest(List<WorkPlan> plans) {
         return new ArrayList<>(plans.subList(0, amountPlans / 2));
     }
+
     /* takes the best plans and creates plans evolve with two good plans
     till it back to the original amount of plans*/
     public List<WorkPlan> evolve(List<WorkPlan> bestPlans) {
@@ -147,10 +156,16 @@ public class OptimizationEngine {
         Random random = new Random();
 
         for (Dish dish : menu) {
-            String name = dish.getName();
-            // choose randomly from which parent to take their amount of this specific dish
-            int amount = random.nextBoolean() ? p1.getPlan().get(name) : p2.getPlan().get(name);
-            child.addDishAmount(name, amount);
+            String dishName = dish.getName();
+            /* choose randomly from which parent to take their amount of this specific dish
+               and their action */
+            if (random.nextBoolean()) {
+                child.addDishAmount(dishName, p1.getAmountForDish(dishName));
+                child.addDishAction(dishName, p1.getActionForDish(dishName));
+            } else {
+                child.addDishAmount(dishName, p2.getAmountForDish(dishName));
+                child.addDishAction(dishName, p2.getActionForDish(dishName));
+            }
         }
         return child;
     }
@@ -159,8 +174,18 @@ public class OptimizationEngine {
     private void Mutation(WorkPlan plan) {
         Random random = new Random();
         Dish randomDish = menu.get(random.nextInt(menu.size()));
-        int currentAmount = plan.getPlan().get(randomDish.getName());
-        // add or subtract from the current amount
-        plan.addDishAmount(randomDish.getName(), Math.max(0, currentAmount + random.nextInt(11) - 5));
+        String dishName = randomDish.getName();
+        if (random.nextBoolean()) {
+            // mutation in the amount of the dish
+            int currentAmount = plan.getAmountForDish(dishName);
+            plan.addDishAmount(dishName, Math.max(0, currentAmount + random.nextInt(11) - 5));
+        } else {
+            // mutation in the action to the dish
+            plan.addDishAction(dishName, random.nextInt(3));
+        }
+    }
+
+    public void setCurrentDayType(String currentDayType) {
+        this.currentDayType = currentDayType;
     }
 }
