@@ -5,6 +5,7 @@ import java.time.LocalDate;
 /* implements Serializable because InventoryManager saves also Ingredient into the file
     so it also has to implements Serializable*/
 public class Ingredient implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String name;
     private double amount;
     private double pricePerUnit;

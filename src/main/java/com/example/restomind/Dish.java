@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Dish implements Serializable{
+    private static final long serialVersionUID = 1L;
     private String name;
     private double price;
     // String: name of the ingredient, Double: amount of the ingredient
@@ -27,7 +28,7 @@ public class Dish implements Serializable{
     public double calculateDishIngredientsCost(InventoryManager inventory){
         double cost = 0;
         for (Map.Entry<String,Double> ingredient : recipe.entrySet()){
-            Ingredient currentIngredient = inventory.getIngredient(ingredient.getKey());
+            Ingredient currentIngredient = inventory.getFirstBatch(ingredient.getKey());
             double amount = ingredient.getValue();
             cost += currentIngredient.getPricePerUnit() * amount;
         }

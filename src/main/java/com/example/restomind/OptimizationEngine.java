@@ -96,7 +96,7 @@ public class OptimizationEngine {
                     take the estimated dishes that would go to waste and multiply it by half of the dish price
                     ( the estimated cost of the dish to the restaurant ) */
                     if (plannedAmount > avgDemand) {
-                        fitnessScore -= (plannedAmount - avgDemand) * (dish.getPrice() * 0.5);
+                        fitnessScore -= (plannedAmount - avgDemand) * (dish.calculateDishIngredientsCost(inventory));
                     }
                 } else {
                     /* reduce fitness score by a big number
