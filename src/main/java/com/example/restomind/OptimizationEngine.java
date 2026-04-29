@@ -67,7 +67,8 @@ public class OptimizationEngine {
 
     // gives fitness score for each plan
     public void fitnessScoreForPlans(List<WorkPlan> plans) {
-        DayOfWeek today = LocalDate.now().getDayOfWeek();
+        LocalDate businessDate = Calendar.RestaurantClock.getBusinessDate();
+        DayOfWeek businessDay = businessDate.getDayOfWeek();
 
         for (WorkPlan plan : plans) {
             // creates copy of the inventory
@@ -82,7 +83,7 @@ public class OptimizationEngine {
                 int plannedAmount = plan.getPlan().get(dish.getName());
                 int actionType = plan.getActions().get(dish.getName());
 
-                double demand = dish.getDemand(currentDayType,today);
+                double demand = dish.getDemand(currentDayType,businessDay);
                 // the avg demand boost this action gives us
                 double demandBoost = dish.getDemandBoost(actionType);
 

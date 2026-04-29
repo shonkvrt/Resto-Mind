@@ -3,21 +3,37 @@ package com.example.restomind;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Scanner;
 
 public class Calendar {
+
+    public class RestaurantClock {
+
+        // return the correct business date (4 am will still count as yesterday business date)
+        public static LocalDate getBusinessDate() {
+            LocalDateTime now = LocalDateTime.now();
+            // if the time right now is lower than 4 am then return the date yesterday
+            if (now.toLocalTime().isBefore(LocalTime.of(4, 0))) {
+                return now.toLocalDate().minusDays(1);
+            }
+            // else return today's date
+            return now.toLocalDate();
+        }
+    }
 
     // gets today holiday or regular day
     public static String getTodayHoliday() {
         // put on try because it is external api
         try {
-            LocalDate today = LocalDate.now();
+            LocalDate businessDate = RestaurantClock.getBusinessDate();
             //LocalDate testDate = LocalDate.of(2026, 4, 2); // test holiday days
 
             // url for api
             // v=1: version 1, cfg=json: takes only data, maj=on: major holidays, start/end: today
             String urlString = "https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&start="
-                    + today + "&end=" + today;
+                    + businessDate + "&end=" + businessDate;
 
             // string to url object, open a connection, the request is to get info, and connect with hebcal
             URL url = new URL(urlString);
