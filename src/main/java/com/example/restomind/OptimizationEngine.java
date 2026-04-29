@@ -132,6 +132,11 @@ public class OptimizationEngine {
         List<WorkPlan> nextGeneration = new ArrayList<>();
         Random random = new Random();
 
+        // elitism, keep the 5 best plans with no change
+        for (int i = 0; i < 5; i++) {
+            nextGeneration.add(bestPlans.get(i));
+        }
+
         // fill back to 100 plans 
         while (nextGeneration.size() < amountPlans) {
 

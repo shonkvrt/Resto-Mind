@@ -45,6 +45,7 @@ public class Dish implements Serializable{
     public Dish(String name, double price, int initialDemand) {
         this.name = name;
         this.price = price;
+        this.recipe = new HashMap<>();
         this.demandDayType = new HashMap<>();
         this.actionDemandBoost = new HashMap<>();
 
@@ -108,7 +109,7 @@ public class Dish implements Serializable{
         HashMap<DayOfWeek, DemandData> newDemands = new HashMap<>();
 
         for (DayOfWeek day : DayOfWeek.values()) {
-            newDemands.put(day, new DemandData(getDemand(holidayName,day),1));
+            newDemands.put(day, new DemandData(getDemand("REGULAR",day),1));
         }
 
         demandDayType.put(holidayName, newDemands);
