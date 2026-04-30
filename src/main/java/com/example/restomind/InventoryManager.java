@@ -3,10 +3,7 @@ package com.example.restomind;
 import java.io.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // implements Serializable to save the object data in a file
 public class InventoryManager implements Serializable{
@@ -14,11 +11,11 @@ public class InventoryManager implements Serializable{
     so if there is any changes so the version will stay the same while doing deserialization */
     private static final long serialVersionUID = 1L;
     private HashMap<String,List<Ingredient>> ingredients;
-    private List<Dish> menu;
+    private HashMap<String, Dish> menu;
 
     public InventoryManager(){
         this.ingredients = new HashMap<>();
-        this.menu = new ArrayList<>();
+        this.menu = new HashMap<>();
     }
 
     // add ingredient to the map (also based on date expiration)
@@ -32,7 +29,7 @@ public class InventoryManager implements Serializable{
     }
 
     public void addDish(Dish dish){
-        menu.add(dish);
+        menu.put(dish.getName(), dish);
     }
 
     // copy data for genetic algorithm
@@ -58,7 +55,7 @@ public class InventoryManager implements Serializable{
             copy.ingredients.put(ingredient.getKey(), copyList);
         }
 
-        for (Dish dish : menu) {
+        for (Dish dish : getMenuDishes()) {
             copy.addDish(dish);
         }
 
@@ -214,7 +211,15 @@ public class InventoryManager implements Serializable{
         return ingredients.get(name).get(0);
     }
 
-    public List<Dish> getMenu() {
+    public Dish getDishByName(String name) {
+        return menu.get(name);
+    }
+
+    public Collection<Dish> getMenuDishes() {
+        return menu.values();
+    }
+
+    public HashMap<String, Dish> getMenu() {
         return menu;
     }
 
@@ -222,22 +227,22 @@ public class InventoryManager implements Serializable{
         return ingredients;
     }
 
-    public void printInventoryStatus() {
-        System.out.println("inventory data report : ");
-        if (this.ingredients == null || this.ingredients.isEmpty()){
-            System.out.println("the inventory is empty ");
-        }else{
-            ingredients.forEach((name,ingredient) -> System.out.println(name + ": " + getTotalAmountOfIngredient(name)));
-        }
-
-        if (this.menu == null || this.menu.isEmpty()){
-            System.out.println("no dishes in the menu");
-        }else{
-            System.out.println("amount of dishes : " + menu.size());
-            menu.forEach(dish -> System.out.println(dish.getName() + " (price:  " + dish.getPrice() + " )"));
-        }
-        System.out.println("--------------------------------");
-    }
+//    public void printInventoryStatus() {
+//        System.out.println("inventory data report : ");
+//        if (this.ingredients == null || this.ingredients.isEmpty()){
+//            System.out.println("the inventory is empty ");
+//        }else{
+//            ingredients.forEach((name,ingredient) -> System.out.println(name + ": " + getTotalAmountOfIngredient(name)));
+//        }
+//
+//        if (this.menu == null || this.menu.isEmpty()){
+//            System.out.println("no dishes in the menu");
+//        }else{
+//            System.out.println("amount of dishes : " + menu.size());
+//            menu.forEach(dish -> System.out.println(dish.getName() + " (price:  " + dish.getPrice() + " )"));
+//        }
+//        System.out.println("--------------------------------");
+//    }
 
 
 }

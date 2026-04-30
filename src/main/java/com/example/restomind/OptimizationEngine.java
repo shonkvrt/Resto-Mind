@@ -3,18 +3,20 @@ package com.example.restomind;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
 public class OptimizationEngine {
     private InventoryManager inventory;
-    private List<Dish> menu;
+    // menu helper for calculations
+    private List<Dish> menuList;
     private int amountPlans = 100; // amount of random plans
     private String currentDayType = "REGULAR";
 
-    public OptimizationEngine(InventoryManager inventory, List<Dish> menu) {
+    public OptimizationEngine(InventoryManager inventory, Collection<Dish> menuList) {
         this.inventory = inventory;
-        this.menu = menu;
+        this.menuList = new ArrayList<>(menuList);// create the menu list one time
     }
 
     // the function that will run the genetic algorithm and give us the best plan
@@ -50,7 +52,7 @@ public class OptimizationEngine {
             WorkPlan newPlan = new WorkPlan();
 
             // for every dish in the menu we will give a random amount
-            for (Dish dish : menu) {
+            for (Dish dish : inventory.getMenuDishes()) {
 
                 double avgDemand = dish.getDemand(currentDayType, LocalDate.now().getDayOfWeek());
                 // random amount limited close to our avgDemand (a little bit above for trying)
@@ -76,7 +78,7 @@ public class OptimizationEngine {
             double fitnessScore = 0;
 
 
-            for (Dish dish : menu) {
+            for (Dish dish : inventory.getMenuDishes()) {
 
                 /* takes from the hash table the amount the plan gave to the dish
                 and if the dish wasn't found so the default is 0 (getOrDefault) */
@@ -161,7 +163,7 @@ public class OptimizationEngine {
         WorkPlan child = new WorkPlan();
         Random random = new Random();
 
-        for (Dish dish : menu) {
+        for (Dish dish : menuList) {
             String dishName = dish.getName();
             /* choose randomly from which parent to take their amount of this specific dish
                and their action */
@@ -179,7 +181,7 @@ public class OptimizationEngine {
     // creates a mutation plan that randomly change the amount ( to try new things )
     private void Mutation(WorkPlan plan) {
         Random random = new Random();
-        Dish randomDish = menu.get(random.nextInt(menu.size()));
+        Dish randomDish = menuList.get(random.nextInt(menuList.size()));
         String dishName = randomDish.getName();
         if (random.nextBoolean()) {
             // mutation in the amount of the dish

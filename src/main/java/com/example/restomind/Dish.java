@@ -125,8 +125,8 @@ public class Dish implements Serializable{
         return cost;
     }
 
-    public void recordSale() {
-        this.dailySalesCount++;
+    public void recordSale(int amount) {
+        this.dailySalesCount += amount;
     }
 
     public int getAndResetDailySales() {
