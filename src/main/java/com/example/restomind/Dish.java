@@ -40,7 +40,7 @@ public class Dish implements Serializable{
     /* Integer: type of action (0: Normal,1: Upsell,2: HappyHour)
        ActionData: the count and the demand boost (how much bigger demand than normal)*/
     private HashMap<Integer, ActionData> actionDemandBoost;
-
+    private int dailySalesCount = 0;
 
     public Dish(String name, double price, int initialDemand) {
         this.name = name;
@@ -123,6 +123,16 @@ public class Dish implements Serializable{
             cost += currentIngredient.getPricePerUnit() * ingredient.getValue();
         }
         return cost;
+    }
+
+    public void recordSale() {
+        this.dailySalesCount++;
+    }
+
+    public int getAndResetDailySales() {
+        int sales = this.dailySalesCount;
+        this.dailySalesCount = 0;
+        return sales;
     }
 
     /* gets the demand of specific day in a specific holiday and
