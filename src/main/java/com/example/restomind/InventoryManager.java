@@ -116,14 +116,13 @@ public class InventoryManager implements Serializable{
     }
 
     // calculate how much money we lost from expired waste food
-    public double calculateExpiredWasteValue() {
+    public double calculateExpiredWasteValue(LocalDate date) {
         double totalWasteValue = 0;
-        LocalDate today = LocalDate.now();
 
         for (List<Ingredient> batchList : ingredients.values()) {
             for (Ingredient ingredient : batchList){
-                // if the ingredient is expired
-                if (ingredient.getExpirationDate().isBefore(today.plusDays(1))) {
+                // if the ingredient is expired at date
+                if (ingredient.getExpirationDate().isBefore(date.plusDays(1))) {
                     totalWasteValue += (ingredient.getAmount() * ingredient.getPricePerUnit());
                 }
             }
@@ -150,6 +149,25 @@ public class InventoryManager implements Serializable{
         }
         return expiredIngredients;
     }
+
+    // gets the value of ingredients that in dish recipe that going to expire in day limit
+    public double calculateExpiringValueForDish(Dish dish, int daysLimit) {
+        double expiringValue = 0;
+        List<Ingredient> expiringIngredients = getExpiringIngredients(daysLimit);
+
+        for (Map.Entry<String, Double> ingredient : dish.getRecipe().entrySet()) {
+            String ingredientName = ingredient.getKey();
+
+            // checks if ingredient in dish is in the list of expiring ingredients
+            for (Ingredient ing : expiringIngredients) {
+                if (ing.getName().equals(ingredientName)) {
+                    expiringValue += (ing.getAmount() * ing.getPricePerUnit());
+                }
+            }
+        }
+        return expiringValue;
+    }
+
     // remove expired ingredients
     public void removeExpiredIngredients() {
         LocalDate today = LocalDate.now();

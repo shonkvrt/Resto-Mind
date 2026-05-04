@@ -1,9 +1,13 @@
 package com.example.restomind;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.util.Duration;
+
 import java.util.Map;
 
 public class ChefController {
@@ -19,7 +23,13 @@ public class ChefController {
     @FXML
     public void initialize() {
         this.dayManager = HelloApplication.getDayManager();
-        ordersArea.setVisible(false); // hide orders at the beginning
+
+        // refresh every 3 seconds to see if there are new orders
+        Timeline autoRefresh = new Timeline(new KeyFrame(Duration.seconds(3), e -> {
+            refreshOrders();
+        }));
+        autoRefresh.setCycleCount(Timeline.INDEFINITE);
+        autoRefresh.play();
     }
 
     // push start day button
@@ -46,18 +56,23 @@ public class ChefController {
         for (Order order : dayManager.getOrders()) {
             // space between everything in this order card is 10 pixel (title,list,button)
             VBox orderCard = new VBox(10);
-            orderCard.setStyle("-fx-background-color: #f4f4f4; -fx-padding: 15; -fx-border-color: black;");
+            orderCard.setStyle("-fx-background-color: #f4f4f4; -fx-padding: 15; -fx-border-color: black; -fx-border-radius: 10; -fx-background-radius: 10;");
 
             Label title = new Label("#order " + order.getOrderId());
+            title.setStyle("-fx-text-fill: #000000; -fx-font-weight: bold; -fx-font-size: 16px;");
             orderCard.getChildren().add(title);
 
             // shows all the dishes of the order
             for (Map.Entry<String, Integer> dish : order.getOrder().entrySet()) {
-                orderCard.getChildren().add(new Label("- " + dish.getKey() + ": " + dish.getValue()));
+                Label dishLabel = new Label("- " + dish.getKey() + ": " + dish.getValue());
+                dishLabel.setStyle("-fx-text-fill: #000000; -fx-font-size: 14px;");
+                orderCard.getChildren().add(dishLabel);
             }
 
             Button doneBtn = new Button("Done");
             doneBtn.setOnAction(e -> {
+                dayManager.markOrderAsReady(order);
+
                 dayManager.completeOrder(order.getOrderId()); // removes from orders to cook
                 refreshOrders(); // refresh screen
             });
@@ -71,6 +86,7 @@ public class ChefController {
     @FXML
     protected void onFinishPrepClick() {
         dayManager.prepareDishesForDay(); // takes the ingredients from inventory to the prepared dishes
+        dayManager.setServiceStarted(true);
         workPlanArea.setVisible(false);
         ordersArea.setVisible(true);
         statusLabel.setText("waiting for orders from waiters...");

@@ -12,6 +12,9 @@ public class DayManager {
     // String: dish name, Integer: prepared dishes stock
     private HashMap<String, Integer> preparedDishesStock = new HashMap<>();
     private List<Order> orders = new ArrayList<>();
+    // shows if service as started (waiters starts their shift)
+    private boolean serviceStarted = false;
+    private List<Order> readyOrders = new ArrayList<>();
 
     public DayManager(InventoryManager inventory) {
         this.inventory = inventory;
@@ -29,8 +32,8 @@ public class DayManager {
     public String getSuggestedAction(Dish dish) {
         int action = dailyPlan.getActionForDish(dish.getName());
         switch(action) {
-            case 1: return "Upsell";
-            case 2: return "Happy Hour";
+            case 1: return "Chef Recommendation";
+            case 2: return "Discount";
             default: return "Regular";
         }
     }
@@ -60,29 +63,28 @@ public class DayManager {
         for (Map.Entry<String, Integer> item : order.getOrder().entrySet()) {
             preparedDishesStock.put(item.getKey(), preparedDishesStock.get(item.getKey()) - item.getValue());
 
-            // גישה ישירה למנה בלי לולאת חיפוש![cite: 9, 14]
             Dish dish = inventory.getDishByName(item.getKey());
             // update dish sales
             dish.recordSale(item.getValue());
         }
 
-        // הוספה לתור של הטבחים
         orders.add(order);
         return true;
     }
 
-    // return true if prepared dish stock isn't over yet else false
-    public boolean executeSale(Dish dish) {
-        int countDish = preparedDishesStock.getOrDefault(dish.getName(), 0);
-
-        if (countDish > 0) {
-            // takes from the prepared dish stock 1 dish
-            preparedDishesStock.put(dish.getName(), countDish - 1);
-            dish.recordSale(1); // for updates
-            return true;
-        } else {
-            return false;
+    // checks if kitchen has a lot of dishes to make
+    public boolean checkKitchenLoad(int limitHardDishesPrep) {
+        int hardDishesInWork = 0;
+        for (Order order : orders) {
+            for (Map.Entry<String, Integer> dishInfo : order.getOrder().entrySet()) {
+                Dish dish = inventory.getDishByName(dishInfo.getKey());
+                if (dish.isHardToMake()) {
+                    hardDishesInWork += dishInfo.getValue();
+                }
+            }
         }
+
+        return hardDishesInWork > limitHardDishesPrep;
     }
 
     // update demand avg and action demand boost at the end of the day
@@ -99,8 +101,28 @@ public class DayManager {
         inventory.saveDataToFile("restaurant_data.dat");
     }
 
+    public void markOrderAsReady(Order order) {
+        readyOrders.add(order);
+    }
+
+    public List<Order> getReadyOrders() {
+        return readyOrders;
+    }
+
+    public void deliverOrder(int orderId) {
+        readyOrders.removeIf(o -> o.getOrderId() == orderId);
+    }
+
     public void completeOrder(int orderId) {
         orders.removeIf(o -> o.getOrderId() == orderId);
+    }
+
+    public void setServiceStarted(boolean status) {
+        this.serviceStarted = status;
+    }
+
+    public boolean isServiceStarted() {
+        return serviceStarted;
     }
 
     public WorkPlan getDailyPlan() {

@@ -8,9 +8,10 @@ public class Order {
     // String: name of dish,Integer: amount of dish
     private HashMap<String, Integer> order;
 
-    public Order() {
+
+    public Order(HashMap<String, Integer> order) {
         this.orderId = idCounter++;
-        this.order = new HashMap<>();
+        this.order = order;
     }
 
     public void addItem(String dishName, int amount) {

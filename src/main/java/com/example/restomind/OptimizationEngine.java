@@ -2,10 +2,7 @@ package com.example.restomind;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class OptimizationEngine {
     private InventoryManager inventory;
@@ -48,17 +45,29 @@ public class OptimizationEngine {
         List<WorkPlan> plans = new ArrayList<>();
         Random random = new Random();
 
+        List<Dish> dishesList = new ArrayList<>(inventory.getMenuDishes());
+
         for (int i = 0; i < amountPlans; i++) {
             WorkPlan newPlan = new WorkPlan();
-
+            int recommendationsCount = 0;
+            // shuffles menu
+            Collections.shuffle(dishesList);
             // for every dish in the menu we will give a random amount
-            for (Dish dish : inventory.getMenuDishes()) {
+            for (Dish dish : dishesList) {
 
                 double avgDemand = dish.getDemand(currentDayType, LocalDate.now().getDayOfWeek());
                 // random amount limited close to our avgDemand (a little bit above for trying)
                 int randomAmount = random.nextInt((int)(avgDemand*1.5)+5);
                 newPlan.addDishAmount(dish.getName(), randomAmount);
-                newPlan.addDishAction(dish.getName(), random.nextInt(3));
+
+                // takes the first dishes from the shuffle menu and make them chef recommendation
+                if (recommendationsCount < 2) {
+                    newPlan.addDishAction(dish.getName(), 1); // Chef's Recommendation[cite: 1, 2]
+                    recommendationsCount++;
+                } else {
+                    // rest of the dishes will be regular or with a discount
+                    newPlan.addDishAction(dish.getName(), random.nextBoolean() ? 0 : 2);
+                }
             }
 
             plans.add(newPlan);
@@ -90,8 +99,21 @@ public class OptimizationEngine {
                 double demandBoost = dish.getDemandBoost(actionType);
 
                 double dishPrice = dish.getPrice();
+
                 if(actionType == 2){
                     dishPrice *= 0.8;
+                    double savingPotential = inventory.calculateExpiringValueForDish(dish,2);
+                    double totalIngredientsCost = plannedAmount * dish.calculateDishIngredientsCost(inventory);
+
+                    double dynamicBoost = 1.0;
+                    if (totalIngredientsCost > 0) {
+                        // the ratio between the value of saving and the ingredients cost
+                        dynamicBoost = (savingPotential / totalIngredientsCost);
+                    }
+
+                    demandBoost = Math.min(demandBoost, dynamicBoost);
+                    fitnessScore += savingPotential;
+
                 }
 
                 demand *= demandBoost;
@@ -110,12 +132,12 @@ public class OptimizationEngine {
                 } else {
                     /* reduce fitness score by a big number
                     because there was not enough ingredients for the plan */
-                    fitnessScore -= 500;
+                    fitnessScore -= 10000;
                 }
             }
             // calculate how much money we will lose on expired food in the copy inventory
-            double wasteFoodCost = copyInventory.calculateExpiredWasteValue();
-            fitnessScore -= wasteFoodCost * 1.5;
+            double wasteFoodCost = copyInventory.calculateExpiredWasteValue(LocalDate.now().plusDays(1));
+            fitnessScore -= wasteFoodCost * 2.0;
             // update fitness score for this specific plan
             plan.setFitness(fitnessScore);
         }
@@ -162,18 +184,25 @@ public class OptimizationEngine {
     private WorkPlan crossover(WorkPlan p1, WorkPlan p2) {
         WorkPlan child = new WorkPlan();
         Random random = new Random();
+        int recommendationsCount = 0;
 
         for (Dish dish : menuList) {
             String dishName = dish.getName();
+            int action = random.nextBoolean() ? p1.getActionForDish(dishName) : p2.getActionForDish(dishName);
+
+            if (action == 1) {
+                if (recommendationsCount < 2) {
+                    recommendationsCount++;
+                } else {
+                    action = 0;
+                }
+            }
+
             /* choose randomly from which parent to take their amount of this specific dish
                and their action */
-            if (random.nextBoolean()) {
-                child.addDishAmount(dishName, p1.getAmountForDish(dishName));
-                child.addDishAction(dishName, p1.getActionForDish(dishName));
-            } else {
-                child.addDishAmount(dishName, p2.getAmountForDish(dishName));
-                child.addDishAction(dishName, p2.getActionForDish(dishName));
-            }
+            child.addDishAmount(dishName, random.nextBoolean() ? p1.getAmountForDish(dishName) : p2.getAmountForDish(dishName));
+            child.addDishAction(dishName, action);
+
         }
         return child;
     }
@@ -189,7 +218,15 @@ public class OptimizationEngine {
             plan.addDishAmount(dishName, Math.max(0, currentAmount + random.nextInt(11) - 5));
         } else {
             // mutation in the action to the dish
-            plan.addDishAction(dishName, random.nextInt(3));
+            int newAction = random.nextInt(3);
+
+            if (newAction == 1) {
+                // check how many dishes with chef recommendation
+                long count = plan.getActions().values().stream().filter(a -> a == 1).count();
+                if (count >= 2) {
+                    newAction = random.nextBoolean() ? 0 : 2;
+                }
+            }
         }
     }
 

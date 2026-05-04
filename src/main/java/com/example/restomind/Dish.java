@@ -10,6 +10,7 @@ public class Dish implements Serializable{
     private static final long serialVersionUID = 1L;
     private String name;
     private double price;
+    private boolean isHardToMake;
     // String: name of the ingredient, Double: amount of the ingredient
     private HashMap<String, Double> recipe;
 
@@ -37,14 +38,15 @@ public class Dish implements Serializable{
     /* String: the day type (regular, passover), DayOfWeek : the day in the week
        DemandData: the count and the avg demand for every type day*/
     private HashMap<String, HashMap<DayOfWeek, DemandData>> demandDayType;
-    /* Integer: type of action (0: Normal,1: Upsell,2: HappyHour)
+    /* Integer: type of action (0: Normal,1: Chef Recommendation,2: Discount)
        ActionData: the count and the demand boost (how much bigger demand than normal)*/
     private HashMap<Integer, ActionData> actionDemandBoost;
     private int dailySalesCount = 0;
 
-    public Dish(String name, double price, int initialDemand) {
+    public Dish(String name, double price, int initialDemand,boolean isHardToMake) {
         this.name = name;
         this.price = price;
+        this.isHardToMake = isHardToMake;
         this.recipe = new HashMap<>();
         this.demandDayType = new HashMap<>();
         this.actionDemandBoost = new HashMap<>();
@@ -60,7 +62,7 @@ public class Dish implements Serializable{
 
         // default actions
         actionDemandBoost.put(0, new ActionData(1.0,1)); // Regular
-        actionDemandBoost.put(1, new ActionData(1.2, 1)); // Upsell
+        actionDemandBoost.put(1, new ActionData(1.15, 1)); // Upsell
         actionDemandBoost.put(2, new ActionData(1.5, 1)); // Happy Hour
     }
 
@@ -167,6 +169,10 @@ public class Dish implements Serializable{
 
     public double getPrice() {
         return price;
+    }
+
+    public boolean isHardToMake() {
+        return isHardToMake;
     }
 
     public HashMap<String, Double> getRecipe() {

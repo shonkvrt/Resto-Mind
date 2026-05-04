@@ -15,15 +15,23 @@ public class HelloApplication extends Application {
         InventoryManager inventory = InventoryManager.loadDataFromFile("restaurant_data.dat");
         dayManager = new DayManager(inventory);
 
-        // loads the chef view screen
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("chef-view.fxml"));
+        // loads the chef and waiter views screen
+        FXMLLoader chefLoader = new FXMLLoader(HelloApplication.class.getResource("chef-view.fxml"));
+        FXMLLoader waiterLoader = new FXMLLoader(HelloApplication.class.getResource("waiter-view.fxml"));
 
         try{
-            Scene scene = new Scene(fxmlLoader.load(), 900, 700);
+            Scene scene = new Scene(chefLoader.load(), 900, 700);
+            Stage chefStage = new Stage();
+            chefStage.setTitle("RestoMind - Chef Terminal");
+            chefStage.setScene(scene);
+            chefStage.show();
 
-            stage.setTitle("RestoMind - Chef Terminal");
-            stage.setScene(scene);
-            stage.show();
+            Stage waiterStage = new Stage();
+            Scene waiterScene = new Scene(waiterLoader.load(), 900, 700);
+            waiterStage.setTitle("RestoMind - Waiter Terminal");
+            waiterStage.setScene(waiterScene);
+            waiterStage.show();
+
         } catch (IOException e) {
             System.out.println("error with running chef view screen");
             throw new RuntimeException(e);
