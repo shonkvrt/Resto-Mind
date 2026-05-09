@@ -226,6 +226,11 @@ public class InventoryManager implements Serializable{
     }
 
     public Ingredient getFirstBatch(String name){
+        List<Ingredient> batches = ingredients.get(name);
+        // if there is no ingredient like this then create the ingredient with 0 amount and price
+        if (batches == null || batches.isEmpty()) {
+            return new Ingredient(name, 0, 0, LocalDate.now());
+        }
         return ingredients.get(name).get(0);
     }
 
@@ -244,23 +249,4 @@ public class InventoryManager implements Serializable{
     public HashMap<String, List<Ingredient>> getIngredients() {
         return ingredients;
     }
-
-//    public void printInventoryStatus() {
-//        System.out.println("inventory data report : ");
-//        if (this.ingredients == null || this.ingredients.isEmpty()){
-//            System.out.println("the inventory is empty ");
-//        }else{
-//            ingredients.forEach((name,ingredient) -> System.out.println(name + ": " + getTotalAmountOfIngredient(name)));
-//        }
-//
-//        if (this.menu == null || this.menu.isEmpty()){
-//            System.out.println("no dishes in the menu");
-//        }else{
-//            System.out.println("amount of dishes : " + menu.size());
-//            menu.forEach(dish -> System.out.println(dish.getName() + " (price:  " + dish.getPrice() + " )"));
-//        }
-//        System.out.println("--------------------------------");
-//    }
-
-
 }

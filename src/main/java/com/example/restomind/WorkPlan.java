@@ -33,14 +33,6 @@ class WorkPlan {
         return actions.getOrDefault(dishName, 0);
     }
 
-    public void printPlan(int num) {
-        System.out.println("plan number " + num + " :");
-        for (Map.Entry<String, Integer> entry : plan.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
-        }
-        System.out.println("---------------------------");
-    }
-
     public HashMap<String, Integer> getPlan() {
         return plan;
     }

@@ -140,4 +140,8 @@ public class DayManager {
     public int getPreparedStock(Dish dish) {
         return preparedDishesStock.getOrDefault(dish.getName(), 0);
     }
+
+    public boolean hasOrders() {
+        return !orders.isEmpty();
+    }
 }

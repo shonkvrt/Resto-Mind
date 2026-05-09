@@ -8,46 +8,40 @@
            fx:controller="com.example.restomind.WaiterController"
            prefHeight="700.0" prefWidth="900.0">
 
-    <!-- מסך 1: המתנה -->
     <VBox fx:id="waitingScreen" alignment="CENTER" spacing="20" style="-fx-background-color: #34495e;">
-        <Label text="ממתין לאישור מהמטבח לתחילת יום..."
+        <Label text="Waiting for kitchen approval to start the day..."
                style="-fx-text-fill: white; -fx-font-size: 20px;"/>
         <ProgressIndicator />
     </VBox>
 
-    <!-- מסך 2: מסך עבודה ראשי -->
     <HBox fx:id="mainWorkScreen" spacing="15" visible="false" style="-fx-background-color: #f4f4f4;">
         <padding>
             <Insets top="15" right="15" bottom="15" left="15"/>
         </padding>
 
-        <!-- 1. תפריט מנות (צד ימין - רוחב קבוע) -->
         <VBox spacing="10" prefWidth="250" style="-fx-background-color: #2c3e50; -fx-padding: 10; -fx-background-radius: 10;">
-            <Label text="תפריט מנות" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Label text="Dish Menu" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
             <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background: transparent; -fx-background-color: transparent;">
                 <VBox fx:id="menu" spacing="10" />
             </ScrollPane>
             <VBox fx:id="preOrderActions" spacing="8" style="-fx-background-color: #34495e; -fx-padding: 10; -fx-background-radius: 10;">
-                <Label text="מבצעים והצעות:" style="-fx-text-fill: #3498db; -fx-font-weight: bold;"/>
+                <Label text="Promotions &amp; Offers:" style="-fx-text-fill: #3498db; -fx-font-weight: bold;"/>
             </VBox>
         </VBox>
 
-        <!-- 2. עמודה מרכזית -->
         <VBox HBox.hgrow="ALWAYS" spacing="15">
 
-            <!-- אזור הגרירה - שונה צבע הטקסט לשחור -->
             <VBox fx:id="dropZone" VBox.vgrow="ALWAYS" alignment="CENTER"
                   style="-fx-border-color: #3498db; -fx-border-style: dashed; -fx-border-width: 3;
                      -fx-background-color: white; -fx-background-radius: 15; -fx-border-radius: 15;">
 
-                <!-- שינוי צבע הטקסט כאן לשחור #000000 -->
-                <Label text="גרור מנות לכאן" style="-fx-text-fill: #000000; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label text="Drag Dishes Here" style="-fx-text-fill: #000000; -fx-font-size: 24px; -fx-font-weight: bold;"/>
 
                 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
                     <VBox fx:id="orderDishesList" spacing="10" style="-fx-padding: 20;"/>
                 </ScrollPane>
 
-                <Button text="שלח הזמנה למטבח" onAction="#onSendOrderClick"
+                <Button text="Send Order to Kitchen" onAction="#onSendOrderClick"
                         style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;
                            -fx-font-size: 18px; -fx-padding: 10 40; -fx-background-radius: 20;">
                     <VBox.margin>
@@ -56,12 +50,10 @@
                 </Button>
             </VBox>
 
-            <!-- 3. אזור הזמנות מוכנות -->
             <VBox prefHeight="180" style="-fx-background-color: #ecf0f1; -fx-padding: 10;
                                     -fx-background-radius: 15; -fx-border-color: #2ecc71; -fx-border-width: 2; -fx-border-radius: 15;">
 
-                <!-- שינוי צבע הטקסט כאן לשחור ליתר ביטחון, למרות שהרקע אפרפר -->
-                <Label text="🔔 הזמנות מוכנות לאיסוף" style="-fx-text-fill: #000000; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                <Label text="🔔 Ready for Pickup" style="-fx-text-fill: #000000; -fx-font-weight: bold; -fx-font-size: 16px;"/>
 
                 <ScrollPane fitToHeight="true" VBox.vgrow="ALWAYS" style="-fx-background: transparent; -fx-background-color: transparent;">
                     <HBox fx:id="readyOrdersArea" spacing="10" style="-fx-padding: 5;"/>

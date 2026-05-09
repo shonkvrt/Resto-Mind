@@ -100,6 +100,7 @@ public class OptimizationEngine {
 
                 double dishPrice = dish.getPrice();
 
+                // in discount action we mainly want to focus on expiring food
                 if(actionType == 2){
                     dishPrice *= 0.8;
                     double savingPotential = inventory.calculateExpiringValueForDish(dish,2);
@@ -110,12 +111,12 @@ public class OptimizationEngine {
                         // the ratio between the value of saving and the ingredients cost
                         dynamicBoost = (savingPotential / totalIngredientsCost);
                     }
-
+                    // takes the boost that calculate the profit from the saving potential up to the demand
                     demandBoost = Math.min(demandBoost, dynamicBoost);
                     fitnessScore += savingPotential;
 
                 }
-
+                // the actual demand for dish with type of action and day
                 demand *= demandBoost;
 
                 if (copyInventory.canMake(dish, plannedAmount)) {
