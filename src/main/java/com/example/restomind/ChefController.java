@@ -76,7 +76,7 @@ public class ChefController {
             doneBtn.setOnAction(e -> {
                 dayManager.markOrderAsReady(order);
 
-                dayManager.completeOrder(order.getOrderId()); // removes from orders to cook
+                dayManager.completeOrder(order); // removes from orders to cook
                 refreshOrders(); // refresh screen
             });
 

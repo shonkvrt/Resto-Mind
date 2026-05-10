@@ -15,6 +15,7 @@ public class DayManager {
     // shows if service as started (waiters starts their shift)
     private boolean serviceStarted = false;
     private List<Order> readyOrders = new ArrayList<>();
+    private int kitchenHardDishesLoad = 0;
 
     public DayManager(InventoryManager inventory) {
         this.inventory = inventory;
@@ -68,23 +69,14 @@ public class DayManager {
             dish.recordSale(item.getValue());
         }
 
+        kitchenHardDishesLoad += order.getHardDishesCount();
         orders.add(order);
         return true;
     }
 
     // checks if kitchen has a lot of dishes to make
-    public boolean checkKitchenLoad(int limitHardDishesPrep) {
-        int hardDishesInWork = 0;
-        for (Order order : orders) {
-            for (Map.Entry<String, Integer> dishInfo : order.getOrder().entrySet()) {
-                Dish dish = inventory.getDishByName(dishInfo.getKey());
-                if (dish.isHardToMake()) {
-                    hardDishesInWork += dishInfo.getValue();
-                }
-            }
-        }
-
-        return hardDishesInWork > limitHardDishesPrep;
+    public boolean checkKitchenLoad(int limitHardDishes,int HardDishesInOrder) {
+        return kitchenHardDishesLoad + HardDishesInOrder > limitHardDishes;
     }
 
     // update demand avg and action demand boost at the end of the day
@@ -113,8 +105,14 @@ public class DayManager {
         readyOrders.removeIf(o -> o.getOrderId() == orderId);
     }
 
-    public void completeOrder(int orderId) {
-        orders.removeIf(o -> o.getOrderId() == orderId);
+    public void completeOrder(Order order) {
+        if (order == null) return;
+        // substruct from the hard dishes the ready order
+        kitchenHardDishesLoad -= order.getHardDishesCount();
+        // remove order from orders
+        orders.remove(order);
+        // add the order to the ready order
+        readyOrders.add(order);
     }
 
     public void setServiceStarted(boolean status) {

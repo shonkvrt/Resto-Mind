@@ -11,7 +11,6 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.scene.control.*;
 
-
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -28,10 +27,12 @@ public class WaiterController {
     @FXML private VBox preOrderActions;
     @FXML private HBox readyOrdersArea;
     private DayManager dayManager;
+    private Order currentOrder;
 
     @FXML
     public void initialize() {
         this.dayManager = HelloApplication.getDayManager();
+        this.currentOrder = new Order();
 
         Timeline checkService = new Timeline();
 
@@ -144,7 +145,12 @@ public class WaiterController {
                     return;
                 }
 
-                if(dish.isHardToMake() && dayManager.checkKitchenLoad(3)){
+                int potentialHardLoad = currentOrder.getHardDishesCount();
+                if(dish.isHardToMake()){
+                    potentialHardLoad++;
+                }
+
+                if(dayManager.checkKitchenLoad(3,potentialHardLoad)){
                     // needs to press ok for continue
                     if (!showLoadWarningAndConfirm(dishName)) {
                         event.setDropCompleted(false);
@@ -152,6 +158,8 @@ public class WaiterController {
                         return;
                     }
                 }
+
+                currentOrder.addItem(dish);
 
                 VBox orderCard = createOrderCard(dishName);
                 orderDishesList.getChildren().add(orderCard);
@@ -212,6 +220,7 @@ public class WaiterController {
 
     // create the order card in the drop zone
     private VBox createOrderCard(String dishName) {
+        Dish dish = dayManager.getInventory().getDishByName(dishName);
         VBox card = new VBox(10);
         card.setStyle("-fx-background-color: white; -fx-padding: 12; -fx-border-color: #3498db; " +
                 "-fx-border-radius: 10; -fx-background-radius: 10; " +
@@ -231,11 +240,22 @@ public class WaiterController {
         minusBtn.setOnAction(e -> {
             int currentAmount = Integer.parseInt(amountLabel.getText());
             if (currentAmount > 1) {
+                currentOrder.removeItem(dish);
                 amountLabel.setText(String.valueOf(currentAmount - 1));
             }
         });
 
         plusBtn.setOnAction(e -> {
+            int potentialHardLoad = currentOrder.getHardDishesCount();
+            if(dish.isHardToMake()){
+                potentialHardLoad++;
+            }
+
+            if (dayManager.checkKitchenLoad(3, potentialHardLoad)) {
+                if (!showLoadWarningAndConfirm(dishName)) return;
+            }
+
+            currentOrder.addItem(dish);
             int currentAmount = Integer.parseInt(amountLabel.getText());
             amountLabel.setText(String.valueOf(currentAmount + 1));
         });
@@ -244,8 +264,12 @@ public class WaiterController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS); // change the size of the space
 
+
         Button deleteBtn = new Button("X");
-        deleteBtn.setOnAction(e -> orderDishesList.getChildren().remove(card));
+        deleteBtn.setOnAction(e -> {
+            currentOrder.removeAllOfDish(dish);
+            orderDishesList.getChildren().remove(card);
+        });
 
         amountControl.getChildren().addAll(minusBtn, amountLabel, plusBtn, spacer, deleteBtn);
 
@@ -257,39 +281,21 @@ public class WaiterController {
     // done with the order and send it to the chefs
     @FXML
     private void onSendOrderClick() {
-        // String: dish name, Integer : amount dish
-        HashMap<String, Integer> dishes = new HashMap<>();
 
-        // runs on every card to take the information (dish name and amount) to put in the hash
-        for (Node node : orderDishesList.getChildren()) {
-            if (node instanceof VBox card) {
-                // gets the name of the card (the name is the first thing I put)
-                Label nameLabel = (Label) card.getChildren().get(0);
-                String dishName = nameLabel.getText();
-
-                // takes the amount
-                HBox amountControl = (HBox) card.getChildren().get(1);
-                Label amountLabel = (Label) amountControl.getChildren().get(1); 
-                int amount = Integer.parseInt(amountLabel.getText());
-
-                dishes.put(dishName, amount);
-            }
-        }
-
-        if (dishes.isEmpty()) {
+        if (currentOrder.getOrder().isEmpty()) {
             System.out.println("cant order empty order");
             return;
         }
 
-
-        Order newOrder = new Order(dishes);
-
-        boolean success = dayManager.processOrder(newOrder);
+        boolean success = dayManager.processOrder(currentOrder);
 
         if (success) {
             orderDishesList.getChildren().clear();
+            currentOrder = new Order();
         } else {
-            System.out.println("error, not enough prepared dishes");
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Error: not enough prepared dishes");
+            alert.showAndWait();
         }
     }
 

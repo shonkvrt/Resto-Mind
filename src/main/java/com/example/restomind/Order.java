@@ -7,15 +7,48 @@ public class Order {
     private int orderId;
     // String: name of dish,Integer: amount of dish
     private HashMap<String, Integer> order;
+    private int hardDishesCount;
 
 
-    public Order(HashMap<String, Integer> order) {
+    public Order() {
         this.orderId = idCounter++;
-        this.order = order;
+        this.order = new HashMap<>();
+        this.hardDishesCount = 0;
     }
 
-    public void addItem(String dishName, int amount) {
-        order.put(dishName, order.getOrDefault(dishName, 0) + amount);
+    public void addItem(Dish dish) {
+        order.put(dish.getName(), order.getOrDefault(dish.getName(), 0) + 1);
+        if (dish.isHardToMake()) {
+            hardDishesCount++;
+        }
+    }
+
+    // removes a dish from the order
+    public void removeItem(Dish dish) {
+        if (order.containsKey(dish.getName())) {
+            int currentAmount = order.get(dish.getName());
+            if (currentAmount > 0) {
+                order.put(dish.getName(), currentAmount - 1);
+                if (dish.isHardToMake()) {
+                    hardDishesCount--;
+                }
+            }
+            // if dish amount in order is 0, then remove dish from order
+            if (order.get(dish.getName()) == 0) {
+                order.remove(dish.getName());
+            }
+        }
+    }
+
+    // remove entire dish with an X
+    public void removeAllOfDish(Dish dish) {
+        if (order.containsKey(dish.getName())) {
+            int amount = order.get(dish.getName());
+            if (dish.isHardToMake()) {
+                hardDishesCount -= amount;
+            }
+            order.remove(dish.getName());
+        }
     }
 
     public int getOrderId() {
@@ -24,5 +57,9 @@ public class Order {
 
     public HashMap<String, Integer> getOrder() {
         return order;
+    }
+
+    public int getHardDishesCount() {
+        return hardDishesCount;
     }
 }

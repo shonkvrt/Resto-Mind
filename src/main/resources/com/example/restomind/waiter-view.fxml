@@ -53,7 +53,7 @@
             <VBox prefHeight="180" style="-fx-background-color: #ecf0f1; -fx-padding: 10;
                                     -fx-background-radius: 15; -fx-border-color: #2ecc71; -fx-border-width: 2; -fx-border-radius: 15;">
 
-                <Label text="🔔 Ready for Pickup" style="-fx-text-fill: #000000; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                <Label text="Ready for Pickup" style="-fx-text-fill: #000000; -fx-font-weight: bold; -fx-font-size: 16px;"/>
 
                 <ScrollPane fitToHeight="true" VBox.vgrow="ALWAYS" style="-fx-background: transparent; -fx-background-color: transparent;">
                     <HBox fx:id="readyOrdersArea" spacing="10" style="-fx-padding: 5;"/>
