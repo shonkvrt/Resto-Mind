@@ -56,8 +56,12 @@ public class OptimizationEngine {
             for (Dish dish : dishesList) {
 
                 double avgDemand = dish.getDemand(currentDayType, LocalDate.now().getDayOfWeek());
+                // the max bound to what inventory can actually supply for this dish
+                int maxMakeable = getMaxMakeableAmount(dish);
                 // random amount limited close to our avgDemand (a little bit above for trying)
-                int randomAmount = random.nextInt((int)(avgDemand*1.5)+5);
+                int maxBound = Math.min((int)(avgDemand * 1.5) + 5, maxMakeable);
+                // if inventory is empty for this dish, plan 0 units, no point trying
+                int randomAmount = maxBound > 0 ? random.nextInt(maxBound + 1) : 0;
                 newPlan.addDishAmount(dish.getName(), randomAmount);
 
                 // takes the first dishes from the shuffle menu and make them chef recommendation
@@ -171,10 +175,12 @@ public class OptimizationEngine {
 
             WorkPlan child = crossover(parent1, parent2);
 
-
             if (random.nextDouble() < 0.05) {
                 Mutation(child);
             }
+
+            // repair the plans who cant be made
+            repairPlan(child);
 
             nextGeneration.add(child);
         }
@@ -233,5 +239,34 @@ public class OptimizationEngine {
 
     public void setCurrentDayType(String currentDayType) {
         this.currentDayType = currentDayType;
+    }
+
+
+    //Returns the maximum number of units that can be made for a dish
+    private int getMaxMakeableAmount(Dish dish) {
+        int maxMakeable = Integer.MAX_VALUE;
+
+        for (Map.Entry<String, Double> ingredient : dish.getRecipe().entrySet()) {
+            double amountPerDish = ingredient.getValue();
+            if (amountPerDish > 0){
+                double totalAvailable = inventory.getTotalAmountOfIngredient(ingredient.getKey());
+                int canMake = (int) (totalAvailable / amountPerDish);
+                maxMakeable = Math.min(maxMakeable, canMake);
+            }
+        }
+
+        // if recipe is empty or had no valid ingredients, treat as 0
+        return maxMakeable == Integer.MAX_VALUE ? 0 : maxMakeable;
+    }
+
+    // repairs the plan if the planned amount is more than capable
+    private void repairPlan(WorkPlan plan) {
+        for (Dish dish : menuList) {
+            int maxMakeable = getMaxMakeableAmount(dish);
+            int planned = plan.getAmountForDish(dish.getName());
+            if (planned > maxMakeable) {
+                plan.addDishAmount(dish.getName(), maxMakeable);
+            }
+        }
     }
 }

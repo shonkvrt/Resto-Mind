@@ -19,7 +19,11 @@ public class HelloApplication extends Application {
         FXMLLoader chefLoader = new FXMLLoader(HelloApplication.class.getResource("chef-view.fxml"));
         FXMLLoader waiterLoader = new FXMLLoader(HelloApplication.class.getResource("waiter-view.fxml"));
 
+
         try{
+
+
+
             Scene scene = new Scene(chefLoader.load(), 900, 700);
             Stage chefStage = new Stage();
             chefStage.setTitle("RestoMind - Chef Terminal");
@@ -33,7 +37,7 @@ public class HelloApplication extends Application {
             waiterStage.show();
 
         } catch (IOException e) {
-            System.out.println("error with running chef view screen");
+            System.out.println("error with running screens");
             throw new RuntimeException(e);
         }
 
