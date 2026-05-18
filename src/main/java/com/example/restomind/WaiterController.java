@@ -102,7 +102,7 @@ public class WaiterController {
         String action = dayManager.getSuggestedAction(dish);
 
         // checks if action is discount and if it does then show it as general action
-        if (action.equals("Discount") || action.equals("Chef Recommendation")) {
+        if (action.startsWith("Discount") || action.equals("Chef Recommendation")) {
             Label actionLabel = new Label(action + ": " + dish.getName());
             actionLabel.setStyle("-fx-text-fill: #f1c40f; -fx-font-weight: bold;");
             preOrderActions.getChildren().add(actionLabel);
@@ -187,8 +187,7 @@ public class WaiterController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("load in kitchen ");
         alert.setHeaderText("kitchen at his peak load");
-        alert.setContentText(dishName + "will be delayed \n" +
-                "Offer customers a drink or something easy to cook while they wait");
+        alert.setContentText(dishName + "will be delayed \n");
 
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;

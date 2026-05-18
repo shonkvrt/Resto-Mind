@@ -64,13 +64,22 @@ public class OptimizationEngine {
                 int randomAmount = maxBound > 0 ? random.nextInt(maxBound + 1) : 0;
                 newPlan.addDishAmount(dish.getName(), randomAmount);
 
-                // takes the first dishes from the shuffle menu and make them chef recommendation
-                if (recommendationsCount < 2) {
-                    newPlan.addDishAction(dish.getName(), 1); // Chef's Recommendation[cite: 1, 2]
+                // a dish we can't make at all gets no action — no point promoting it
+                if (randomAmount == 0) {
+                    newPlan.addDishAction(dish.getName(), 0);
+                    newPlan.addDishDiscount(dish.getName(), 0);
+                } else if (recommendationsCount < 2) {
+                    // takes the first makeable dishes from the shuffle and makes them chef recommendation
+                    newPlan.addDishAction(dish.getName(), 1); // Chef's Recommendation
+                    newPlan.addDishDiscount(dish.getName(), 0);
                     recommendationsCount++;
                 } else {
-                    // rest of the dishes will be regular or with a discount
-                    newPlan.addDishAction(dish.getName(), random.nextBoolean() ? 0 : 2);
+                    // rest of the makeable dishes will be regular or with a discount
+                    int action = random.nextBoolean() ? 0 : 2;
+                    newPlan.addDishAction(dish.getName(), action);
+                    // if discount action then algorithm picks the percentage (5% to 50%)
+                    int discountPercent = (action == 2) ? (5 + random.nextInt(46)) : 0;
+                    newPlan.addDishDiscount(dish.getName(), discountPercent);
                 }
             }
 
@@ -106,7 +115,8 @@ public class OptimizationEngine {
 
                 // in discount action we mainly want to focus on expiring food
                 if(actionType == 2){
-                    dishPrice *= 0.8;
+                    int discountPercent = plan.getDiscountForDish(dish.getName());
+                    dishPrice *= (1.0 - discountPercent / 100.0);
                     double savingPotential = inventory.calculateExpiringValueForDish(dish,2);
                     double totalIngredientsCost = plannedAmount * dish.calculateDishIngredientsCost(inventory);
 
@@ -209,6 +219,9 @@ public class OptimizationEngine {
                and their action */
             child.addDishAmount(dishName, random.nextBoolean() ? p1.getAmountForDish(dishName) : p2.getAmountForDish(dishName));
             child.addDishAction(dishName, action);
+            // takes discount from either parent (only matters if action == 2)
+            int discount = random.nextBoolean() ? p1.getDiscountForDish(dishName) : p2.getDiscountForDish(dishName);
+            child.addDishDiscount(dishName, action == 2 ? discount : 0);
 
         }
         return child;
@@ -229,10 +242,26 @@ public class OptimizationEngine {
 
             if (newAction == 1) {
                 // check how many dishes with chef recommendation
-                long count = plan.getActions().values().stream().filter(a -> a == 1).count();
+                long count = 0;
+                for (Integer action : plan.getActions().values()) {
+                    if (action == 1) {
+                        count++;
+                    }
+                }
                 if (count >= 2) {
                     newAction = random.nextBoolean() ? 0 : 2;
                 }
+            }
+
+            plan.addDishAction(dishName, newAction);
+            // if the new action is a discount,mutate the percentage
+            if (newAction == 2) {
+                int currentDiscount = plan.getDiscountForDish(dishName);
+                // mutate the discout
+                int mutatedDiscount = (5 + random.nextInt(46));
+                plan.addDishDiscount(dishName, mutatedDiscount);
+            } else {
+                plan.addDishDiscount(dishName, 0);
             }
         }
     }
@@ -255,7 +284,7 @@ public class OptimizationEngine {
             }
         }
 
-        // if recipe is empty or had no valid ingredients, treat as 0
+        // if recipe is empty or had no ingredients, then 0
         return maxMakeable == Integer.MAX_VALUE ? 0 : maxMakeable;
     }
 
@@ -264,8 +293,25 @@ public class OptimizationEngine {
         for (Dish dish : menuList) {
             int maxMakeable = getMaxMakeableAmount(dish);
             int planned = plan.getAmountForDish(dish.getName());
+
             if (planned > maxMakeable) {
-                plan.addDishAmount(dish.getName(), maxMakeable);
+                planned = maxMakeable;
+                plan.addDishAmount(dish.getName(), planned);
+            }
+
+            // can't recommend or discount a dish you can't make
+            if (planned == 0) {
+                plan.addDishAction(dish.getName(), 0);
+                plan.addDishDiscount(dish.getName(), 0);
+            } else {
+                // if action is discount but discount is missing or 0, clamp it to valid range [5, 50]
+                int action = plan.getActionForDish(dish.getName());
+                if (action == 2) {
+                    int d = plan.getDiscountForDish(dish.getName());
+                    plan.addDishDiscount(dish.getName(), Math.min(50, Math.max(5, d)));
+                } else {
+                    plan.addDishDiscount(dish.getName(), 0);
+                }
             }
         }
     }

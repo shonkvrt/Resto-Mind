@@ -34,7 +34,9 @@ public class DayManager {
         int action = dailyPlan.getActionForDish(dish.getName());
         switch(action) {
             case 1: return "Chef Recommendation";
-            case 2: return "Discount";
+            case 2:
+                int discountPercent = dailyPlan.getDiscountForDish(dish.getName());
+                return "Discount (" + discountPercent + "% off)";
             default: return "Regular";
         }
     }
